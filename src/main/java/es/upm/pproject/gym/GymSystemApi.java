@@ -1,3 +1,5 @@
+package es.upm.pproject.gym;
+
 import java.util.List;
 
 public interface GymSystemApi {

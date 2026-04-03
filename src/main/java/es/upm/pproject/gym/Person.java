@@ -1,3 +1,5 @@
+package es.upm.pproject.gym;
+
 public class Person {
     private final Integer identificationNumber;
     private final String name;
