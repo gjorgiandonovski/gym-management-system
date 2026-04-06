@@ -40,6 +40,10 @@ public class GymSystem implements GymSystemApi {
         validateRegisteredPerson(email);
         Set<String> enrolledEmails = validateRegisteredClass(className);
 
+        if (enrolledEmails.contains(email)) {
+            throw new GymSystemException("Person already enrolled in class: " + className);
+        }
+
         if (enrolledEmails.size() >= MAX_ENROLLED_PER_CLASS) {
             throw new GymSystemException("Class is full: " + className);
         }
