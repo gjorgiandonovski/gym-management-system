@@ -21,19 +21,19 @@ class GymSystemTest {
 
     @Test
     void registerClassStoresRegisteredClass() {
-        gymSystem.registerClass("Yoga", "Alice");
+        gymSystem.registerClass("Yoga", "Franco");
 
         List<GymClass> classes = gymSystem.getAllRegisteredClasses();
 
         assertEquals(1, classes.size());
         assertEquals("Yoga", classes.get(0).getName());
-        assertEquals("Alice", classes.get(0).getTrainer());
+        assertEquals("Franco", classes.get(0).getTrainer());
     }
 
     @Test
     void registerClassRejectsNullOrBlankName() {
-        assertThrows(GymSystemException.class, () -> gymSystem.registerClass(null, "Alice"));
-        assertThrows(GymSystemException.class, () -> gymSystem.registerClass(" ", "Alice"));
+        assertThrows(GymSystemException.class, () -> gymSystem.registerClass(null, "Maria"));
+        assertThrows(GymSystemException.class, () -> gymSystem.registerClass(" ", "Maria"));
     }
 
     @Test
@@ -45,40 +45,39 @@ class GymSystemTest {
     @Test
     void registerClassRejectsDuplicateName() {
         gymSystem.registerClass("Yoga", "Alice");
-
         assertThrows(GymSystemException.class, () -> gymSystem.registerClass("Yoga", "Bob"));
     }
 
     @Test
     void registerPersonStoresRegisteredPerson() {
-        gymSystem.registerPerson(1, "Laura", "laura@example.com");
+        gymSystem.registerPerson(1, "Laura", "laura@upm.es");
 
         List<Person> people = gymSystem.getAllRegisteredPeople();
 
         assertEquals(1, people.size());
         assertEquals(1, people.get(0).getIdentificationNumber());
         assertEquals("Laura", people.get(0).getName());
-        assertEquals("laura@example.com", people.get(0).getEmail());
+        assertEquals("laura@upm.es", people.get(0).getEmail());
     }
 
     @Test
     void registerPersonRejectsNullIdentificationNumber() {
         assertThrows(GymSystemException.class,
-                () -> gymSystem.registerPerson(null, "Laura", "laura@example.com"));
+                () -> gymSystem.registerPerson(null, "Rebeca", "rebe@upm.com"));
     }
 
     @Test
     void registerPersonRejectsNullOrBlankName() {
         assertThrows(GymSystemException.class,
-                () -> gymSystem.registerPerson(1, null, "laura@example.com"));
+                () -> gymSystem.registerPerson(1, null, "lara@mail.com"));
         assertThrows(GymSystemException.class,
-                () -> gymSystem.registerPerson(1, " ", "laura@example.com"));
+                () -> gymSystem.registerPerson(1, " ", "lara@mail.com"));
     }
 
     @Test
     void registerPersonRejectsNullOrBlankEmail() {
-        assertThrows(GymSystemException.class, () -> gymSystem.registerPerson(1, "Laura", null));
-        assertThrows(GymSystemException.class, () -> gymSystem.registerPerson(1, "Laura", " "));
+        assertThrows(GymSystemException.class, () -> gymSystem.registerPerson(1, "Alonso", null));
+        assertThrows(GymSystemException.class, () -> gymSystem.registerPerson(1, "Alonso", " "));
     }
 
     @Test
@@ -238,6 +237,37 @@ class GymSystemTest {
 
     private void registerBasePersonAndClass() {
         gymSystem.registerPerson(1, "Laura", "laura@example.com");
+        gymSystem.registerClass("Yoga", "Paula");
+    }
+
+    @Test
+    void enrollPersonInClassRejectsDuplicateEnrollment() {
+        registerBasePersonAndClass();
+
+        gymSystem.enrollPersonInClass("laura@example.com", "Yoga");
+
+        assertThrows(GymSystemException.class,
+                () -> gymSystem.enrollPersonInClass("laura@example.com", "Yoga"));
+    }
+
+    @Test
+    void restartClassDoesNotRemoveClass() {
+        gymSystem.registerClass("Yoga", "Pedro");
+        gymSystem.restartClass("Yoga");
+        assertEquals(1, gymSystem.getAllRegisteredClasses().size());
+    }
+
+    @Test
+    void orderMaintainedAfterMultipleOperations() {
         gymSystem.registerClass("Yoga", "Alice");
+        gymSystem.registerPerson(1, "Carlos", "carlos@example.com");
+        gymSystem.registerPerson(2, "Ana", "ana@example.com");
+        gymSystem.enrollPersonInClass("carlos@example.com", "Yoga");
+        gymSystem.enrollPersonInClass("ana@example.com", "Yoga");
+        gymSystem.cancelEnrollment("carlos@example.com", "Yoga");
+        List<Person> people = gymSystem.getPersonsInClass("Yoga");
+
+        assertEquals(List.of("Ana"),
+                people.stream().map(Person::getName).collect(Collectors.toList()));
     }
 }
