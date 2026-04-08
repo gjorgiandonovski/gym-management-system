@@ -1,0 +1,38 @@
+stages:
+  - test
+  - quality
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository
+
+maven_build:
+  stage: test
+  image: maven:3.9.6-eclipse-temurin-11
+  script:
+    - mvn test
+
+sonarqube-check:
+  stage: quality
+  image: maven:3.9.6-eclipse-temurin-11
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+      - .m2/repository
+  script:
+    - >
+      mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar
+      -Dsonar.projectKey=${SONAR_PROJECT_KEY}
+      -Dsonar.host.url=${SONAR_HOST_URL}
+      -Dsonar.login=${SONAR_TOKEN}
+      -Dsonar.qualitygate.wait=true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
